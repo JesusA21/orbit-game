@@ -4,8 +4,10 @@ import { MAX_EXTRA_ROTATIONS } from '../types/game';
 
 interface StatusBarProps {
   state: GameState;
+  isCpuTurn: boolean;
   onSkipMove: () => void;
   onReset: () => void;
+  onBackToMenu: () => void;
 }
 
 const phaseLabels: Record<string, string> = {
@@ -16,9 +18,29 @@ const phaseLabels: Record<string, string> = {
   'game-over': '¡Juego terminado!',
 };
 
-export function StatusBar({ state, onSkipMove, onReset }: StatusBarProps) {
-  const playerName = state.currentPlayer === 'black' ? 'Negras' : 'Blancas';
+export function StatusBar({ state, isCpuTurn, onSkipMove, onReset, onBackToMenu }: StatusBarProps) {
+  const isSolo = state.mode === 'solo';
+  const isHuman = state.currentPlayer === state.humanPlayer;
+
+  let turnLabel: string;
+  if (isSolo) {
+    turnLabel = isHuman ? 'Tu turno' : 'Turno de la CPU...';
+  } else {
+    turnLabel = `Turno: ${state.currentPlayer === 'black' ? 'Negras' : 'Blancas'}`;
+  }
+
   const playerColor = state.currentPlayer === 'black' ? '#1a1a2e' : '#f0e6d3';
+
+  let winnerText = '';
+  if (state.phase === 'game-over') {
+    if (state.isDraw) {
+      winnerText = '🤝 ¡Empate! 🤝';
+    } else if (isSolo) {
+      winnerText = state.winner === state.humanPlayer ? '🏆 ¡Ganaste! 🏆' : '🤖 Ganó la CPU 🤖';
+    } else {
+      winnerText = `🏆 ¡Ganan las ${state.winner === 'black' ? 'Negras' : 'Blancas'}! 🏆`;
+    }
+  }
 
   return (
     <div style={{ textAlign: 'center', marginBottom: 24 }}>
@@ -30,9 +52,7 @@ export function StatusBar({ state, onSkipMove, onReset }: StatusBarProps) {
             animate={{ scale: 1 }}
             style={{ fontSize: 24, fontWeight: 700 }}
           >
-            {state.isDraw
-              ? '🤝 ¡Empate! 🤝'
-              : `🏆 ¡Ganan las ${state.winner === 'black' ? 'Negras' : 'Blancas'}! 🏆`}
+            {winnerText}
           </motion.div>
         ) : (
           <motion.div
@@ -51,9 +71,11 @@ export function StatusBar({ state, onSkipMove, onReset }: StatusBarProps) {
                   border: '2px solid rgba(255,255,255,0.3)',
                 }}
               />
-              <span style={{ fontSize: 18, fontWeight: 600 }}>Turno: {playerName}</span>
+              <span style={{ fontSize: 18, fontWeight: 600 }}>{turnLabel}</span>
             </div>
-            <div style={{ fontSize: 14, opacity: 0.7 }}>{phaseLabels[state.phase]}</div>
+            <div style={{ fontSize: 14, opacity: 0.7 }}>
+              {isCpuTurn ? 'Pensando...' : phaseLabels[state.phase]}
+            </div>
             <div style={{ fontSize: 12, opacity: 0.5, marginTop: 4 }}>
               Piezas: ⚫ {state.piecesLeft.black} | ⚪ {state.piecesLeft.white}
               {state.phase === 'rotate-only' && ` | Rotaciones: ${state.extraRotations}/${MAX_EXTRA_ROTATIONS}`}
@@ -63,7 +85,7 @@ export function StatusBar({ state, onSkipMove, onReset }: StatusBarProps) {
       </AnimatePresence>
 
       <div style={{ marginTop: 16, display: 'flex', gap: 8, justifyContent: 'center' }}>
-        {state.phase === 'move-opponent' && (
+        {state.phase === 'move-opponent' && !isCpuTurn && (
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -82,23 +104,41 @@ export function StatusBar({ state, onSkipMove, onReset }: StatusBarProps) {
           </motion.button>
         )}
         {state.phase === 'game-over' && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            onClick={onReset}
-            style={{
-              padding: '8px 20px',
-              borderRadius: 8,
-              border: 'none',
-              background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
-              color: '#fff',
-              cursor: 'pointer',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            Nueva partida
-          </motion.button>
+          <>
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              onClick={onReset}
+              style={{
+                padding: '8px 20px',
+                borderRadius: 8,
+                border: 'none',
+                background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+                color: '#fff',
+                cursor: 'pointer',
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              Revancha
+            </motion.button>
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              onClick={onBackToMenu}
+              style={{
+                padding: '8px 20px',
+                borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.2)',
+                background: 'rgba(255,255,255,0.1)',
+                color: '#fff',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+            >
+              Menú
+            </motion.button>
+          </>
         )}
       </div>
     </div>

@@ -1,11 +1,15 @@
-import type { Board, GameState, Player } from '../types/game';
+import type { Board, Difficulty, GameMode, GameState, Player } from '../types/game';
 import { PIECES_PER_PLAYER } from '../types/game';
 
 export function createEmptyBoard(): Board {
   return Array(16).fill(null);
 }
 
-export function createInitialState(): GameState {
+export function createInitialState(
+  mode: GameMode = 'vs',
+  difficulty: Difficulty = 'easy'
+): GameState {
+  const humanPlayer: Player = Math.random() < 0.5 ? 'black' : 'white';
   return {
     board: createEmptyBoard(),
     currentPlayer: 'black',
@@ -18,6 +22,9 @@ export function createInitialState(): GameState {
     nextPieceId: 1,
     movedOpponentFrom: null,
     movedOpponentTo: null,
+    mode,
+    difficulty,
+    humanPlayer,
   };
 }
 
