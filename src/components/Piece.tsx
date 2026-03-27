@@ -12,17 +12,14 @@ export function Piece({ player, isWinning }: PieceProps) {
 
   return (
     <motion.div
-      className="piece"
-      layoutId={undefined}
-      initial={{ scale: 0, opacity: 0 }}
+      initial={{ scale: 0 }}
       animate={{
         scale: 1,
-        opacity: 1,
         boxShadow: isWinning
-          ? `0 0 20px 6px rgba(255, 215, 0, 0.8)`
+          ? '0 0 20px 6px rgba(255, 215, 0, 0.8)'
           : `0 4px 8px ${shadow}`,
       }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       style={{
         width: '70%',
         height: '70%',

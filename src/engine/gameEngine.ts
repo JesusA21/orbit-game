@@ -15,15 +15,11 @@ export function createInitialState(): GameState {
     isDraw: false,
     piecesLeft: { black: PIECES_PER_PLAYER, white: PIECES_PER_PLAYER },
     extraRotations: 0,
+    nextPieceId: 1,
     movedOpponentFrom: null,
     movedOpponentTo: null,
   };
 }
-
-// Outer orbit (12 cells, clockwise):
-//  0 → 1 → 2 → 3 → 7 → 11 → 15 → 14 → 13 → 12 → 8 → 4 → 0
-// Inner orbit (4 cells, clockwise):
-//  5 → 6 → 10 → 9 → 5
 
 const OUTER_ORBIT = [0, 1, 2, 3, 7, 11, 15, 14, 13, 12, 8, 4];
 const INNER_ORBIT = [5, 6, 10, 9];
@@ -50,6 +46,10 @@ function toRowCol(index: number): [number, number] {
   return [Math.floor(index / 4), index % 4];
 }
 
+function cellPlayer(board: Board, index: number): Player | null {
+  return board[index]?.player ?? null;
+}
+
 const ALL_LINES: number[][] = (() => {
   const lines: number[][] = [];
   for (let r = 0; r < 4; r++) lines.push([r * 4, r * 4 + 1, r * 4 + 2, r * 4 + 3]);
@@ -60,7 +60,7 @@ const ALL_LINES: number[][] = (() => {
 })();
 
 function findWinningLines(board: Board, player: Player): number[][] {
-  return ALL_LINES.filter((line) => line.every((i) => board[i] === player));
+  return ALL_LINES.filter((line) => line.every((i) => cellPlayer(board, i) === player));
 }
 
 export interface WinResult {
@@ -77,12 +77,8 @@ export function checkWinner(board: Board): WinResult {
     const allCells = [...new Set([...blackWins.flat(), ...whiteWins.flat()])];
     return { winner: null, winningCells: allCells, isDraw: true };
   }
-  if (blackWins.length > 0) {
-    return { winner: 'black', winningCells: blackWins.flat(), isDraw: false };
-  }
-  if (whiteWins.length > 0) {
-    return { winner: 'white', winningCells: whiteWins.flat(), isDraw: false };
-  }
+  if (blackWins.length > 0) return { winner: 'black', winningCells: blackWins.flat(), isDraw: false };
+  if (whiteWins.length > 0) return { winner: 'white', winningCells: whiteWins.flat(), isDraw: false };
   return { winner: null, winningCells: null, isDraw: false };
 }
 
@@ -97,7 +93,7 @@ export function isValidOpponentMove(
   currentPlayer: Player
 ): boolean {
   const opponent = getOpponent(currentPlayer);
-  if (board[from] !== opponent) return false;
+  if (cellPlayer(board, from) !== opponent) return false;
   if (board[to] !== null) return false;
 
   const [r1, c1] = toRowCol(from);
@@ -124,7 +120,7 @@ export function getAdjacentEmpty(board: Board, from: number): number[] {
 export function canMoveAnyOpponentPiece(board: Board, currentPlayer: Player): boolean {
   const opponent = getOpponent(currentPlayer);
   for (let i = 0; i < 16; i++) {
-    if (board[i] === opponent && getAdjacentEmpty(board, i).length > 0) return true;
+    if (cellPlayer(board, i) === opponent && getAdjacentEmpty(board, i).length > 0) return true;
   }
   return false;
 }

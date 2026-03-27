@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { GameState } from '../types/game';
+import type { Board, GameState } from '../types/game';
 import { MAX_EXTRA_ROTATIONS } from '../types/game';
 import {
   canMoveAnyOpponentPiece,
@@ -11,7 +11,7 @@ import {
   rotateBoard,
 } from '../engine/gameEngine';
 
-function applyRotationResult(prev: GameState, rotated: import('../types/game').Board): GameState {
+function applyRotationResult(prev: GameState, rotated: Board): GameState {
   const result = checkWinner(rotated);
 
   if (result.isDraw) {
@@ -21,7 +21,6 @@ function applyRotationResult(prev: GameState, rotated: import('../types/game').B
     return { ...prev, board: rotated, phase: 'game-over', winner: result.winner, winningCells: result.winningCells, isDraw: false };
   }
 
-  // No winner — check if we're in rotate-only phase
   if (prev.phase === 'rotate-only') {
     const next = prev.extraRotations + 1;
     if (next >= MAX_EXTRA_ROTATIONS) {
@@ -30,7 +29,6 @@ function applyRotationResult(prev: GameState, rotated: import('../types/game').B
     return { ...prev, board: rotated, extraRotations: next };
   }
 
-  // Normal turn — advance to next player
   const nextPlayer = getOpponent(prev.currentPlayer);
   const bothOutOfPieces = prev.piecesLeft.black === 0 && prev.piecesLeft.white === 0;
 
@@ -75,7 +73,7 @@ export function useGameState() {
       if (state.phase === 'move-opponent') {
         const opponent = getOpponent(state.currentPlayer);
 
-        if (state.board[index] === opponent) {
+        if (state.board[index]?.player === opponent) {
           const moves = getAdjacentEmpty(state.board, index);
           if (moves.length > 0) {
             setSelectedPiece(index);
@@ -111,11 +109,13 @@ export function useGameState() {
         if (state.board[index] !== null) return;
 
         const newBoard = [...state.board];
-        newBoard[index] = state.currentPlayer;
+        const pieceId = `${state.currentPlayer[0]}${state.nextPieceId}`;
+        newBoard[index] = { id: pieceId, player: state.currentPlayer };
         setState((s) => ({
           ...s,
           board: newBoard,
           phase: 'rotate',
+          nextPieceId: s.nextPieceId + 1,
           piecesLeft: {
             ...s.piecesLeft,
             [s.currentPlayer]: s.piecesLeft[s.currentPlayer] - 1,

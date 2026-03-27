@@ -1,20 +1,19 @@
 import { motion } from 'framer-motion';
-import type { Cell as CellType } from '../types/game';
-import { Piece } from './Piece';
 
 interface CellProps {
-  value: CellType;
   index: number;
   onClick: () => void;
   isSelected: boolean;
   isValidMove: boolean;
   isWinning: boolean;
+  hasPiece: boolean;
 }
 
-export function Cell({ value, onClick, isSelected, isValidMove, isWinning }: CellProps) {
+export function Cell({ onClick, isSelected, isValidMove, isWinning }: CellProps) {
   let bg = 'rgba(255,255,255,0.05)';
   if (isSelected) bg = 'rgba(59, 130, 246, 0.3)';
   else if (isValidMove) bg = 'rgba(34, 197, 94, 0.25)';
+  else if (isWinning) bg = 'rgba(255, 215, 0, 0.15)';
 
   return (
     <motion.div
@@ -34,8 +33,6 @@ export function Cell({ value, onClick, isSelected, isValidMove, isWinning }: Cel
         border: isValidMove ? '2px dashed rgba(34,197,94,0.5)' : '2px solid transparent',
         transition: 'background 0.2s',
       }}
-    >
-      {value && <Piece player={value} isWinning={isWinning} />}
-    </motion.div>
+    />
   );
 }

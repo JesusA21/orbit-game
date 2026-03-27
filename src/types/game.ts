@@ -1,6 +1,11 @@
 export type Player = 'black' | 'white';
 
-export type Cell = Player | null;
+export interface PieceData {
+  id: string;
+  player: Player;
+}
+
+export type Cell = PieceData | null;
 
 // 4x4 board represented as a flat array of 16 cells
 // Index mapping:
@@ -24,6 +29,7 @@ export interface GameState {
   isDraw: boolean;
   piecesLeft: Record<Player, number>;
   extraRotations: number;
+  nextPieceId: number;
   movedOpponentFrom: number | null;
   movedOpponentTo: number | null;
 }
