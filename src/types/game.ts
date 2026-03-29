@@ -1,5 +1,10 @@
 export type Player = 'black' | 'white';
 
+export interface PlayerInfo {
+  name: string;
+  color: string;
+}
+
 export interface PieceData {
   id: string;
   player: Player;
@@ -16,6 +21,12 @@ export type Difficulty = 'easy' | 'normal' | 'hard';
 export const PIECES_PER_PLAYER = 8;
 export const MAX_EXTRA_ROTATIONS = 10;
 
+export const PIECE_COLORS = [
+  '#1a1a2e', '#f0e6d3', '#ef4444', '#f97316', '#f59e0b', '#22c55e',
+  '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7',
+  '#ec4899', '#f43f5e', '#a8a29e', '#0ea5e9',
+];
+
 export interface GameState {
   board: Board;
   currentPlayer: Player;
@@ -31,4 +42,6 @@ export interface GameState {
   mode: GameMode;
   difficulty: Difficulty;
   humanPlayer: Player;
+  players: Record<Player, PlayerInfo>;
+  score: Record<Player, number>;
 }

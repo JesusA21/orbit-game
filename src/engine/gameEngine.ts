@@ -1,18 +1,26 @@
-import type { Board, Difficulty, GameMode, GameState, Player } from '../types/game';
+import type { Board, Difficulty, GameMode, GameState, Player, PlayerInfo } from '../types/game';
 import { PIECES_PER_PLAYER } from '../types/game';
 
 export function createEmptyBoard(): Board {
   return Array(16).fill(null);
 }
 
+const DEFAULT_PLAYERS: Record<Player, PlayerInfo> = {
+  black: { name: 'Negras', color: '#1a1a2e' },
+  white: { name: 'Blancas', color: '#f0e6d3' },
+};
+
 export function createInitialState(
   mode: GameMode = 'vs',
-  difficulty: Difficulty = 'easy'
+  difficulty: Difficulty = 'easy',
+  players?: Record<Player, PlayerInfo>,
+  startingPlayer?: Player,
+  score?: Record<Player, number>,
 ): GameState {
-  const humanPlayer: Player = Math.random() < 0.5 ? 'black' : 'white';
+  const humanPlayer: Player = mode === 'solo' ? 'black' : (startingPlayer ?? 'black');
   return {
     board: createEmptyBoard(),
-    currentPlayer: 'black',
+    currentPlayer: startingPlayer ?? 'black',
     phase: 'place',
     winner: null,
     winningCells: null,
@@ -25,6 +33,8 @@ export function createInitialState(
     mode,
     difficulty,
     humanPlayer,
+    players: players ?? DEFAULT_PLAYERS,
+    score: score ?? { black: 0, white: 0 },
   };
 }
 

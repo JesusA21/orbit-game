@@ -77,13 +77,20 @@ export function Board({ state, selectedPiece, validMoves, onCellClick, onRotate 
         {state.board.map((cell, i) => {
           if (!cell || !cellRects[i]) return null;
           const rect = cellRects[i];
-          const color = cell.player === 'black' ? '#1a1a2e' : '#f0e6d3';
-          const shadow = cell.player === 'black' ? '#0d0d1a' : '#d4c9b8';
+          const info = state.players[cell.player];
+          const color = info.color;
+          // Derive a darker shade for shadow/border
+          const shadow = color + '99';
           const isWinning = state.winningCells?.includes(i) ?? false;
           const size = rect.w * 0.7;
 
           const left = rect.x + (rect.w - size) / 2;
           const top = rect.y + (rect.h - size) / 2;
+
+          // Lighter highlight for radial gradient
+          const highlight = color.length === 7
+            ? '#' + [1,3,5].map(i => Math.min(255, parseInt(color.slice(i, i+2), 16) + 40).toString(16).padStart(2, '0')).join('')
+            : color;
 
           return (
             <motion.div
@@ -105,9 +112,7 @@ export function Board({ state, selectedPiece, validMoves, onCellClick, onRotate 
                 width: size,
                 height: size,
                 borderRadius: '50%',
-                background: `radial-gradient(circle at 35% 35%, ${
-                  cell.player === 'black' ? '#2d2d4a' : '#fff8ef'
-                }, ${color})`,
+                background: `radial-gradient(circle at 35% 35%, ${highlight}, ${color})`,
                 border: `2px solid ${shadow}`,
                 pointerEvents: 'none',
                 zIndex: 5,

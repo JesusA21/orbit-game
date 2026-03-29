@@ -3,10 +3,12 @@ import { useState } from 'react';
 import type { Difficulty, GameMode } from '../types/game';
 
 interface ModeSelectProps {
-  onStart: (mode: GameMode, difficulty: Difficulty) => void;
+  onStart: (mode: string, difficulty: string) => void;
+  hasSavedGame: boolean;
+  onContinue: () => void;
 }
 
-export function ModeSelect({ onStart }: ModeSelectProps) {
+export function ModeSelect({ onStart, hasSavedGame, onContinue }: ModeSelectProps) {
   const [showDifficulty, setShowDifficulty] = useState(false);
 
   const btnStyle = {
@@ -41,6 +43,16 @@ export function ModeSelect({ onStart }: ModeSelectProps) {
 
       {!showDifficulty ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {hasSavedGame && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onContinue}
+              style={{ ...btnStyle, background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}
+            >
+              ▶️ Continuar partida
+            </motion.button>
+          )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

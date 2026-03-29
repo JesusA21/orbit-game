@@ -1,6 +1,23 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { Board, Difficulty, GameMode, GameState } from '../types/game';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Board, Difficulty, GameMode, GameState, Player, PlayerInfo } from '../types/game';
 import { MAX_EXTRA_ROTATIONS } from '../types/game';
+
+const STORAGE_KEY = 'orbit-saved-game';
+
+function saveGame(state: GameState) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function clearSave() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+function loadGame(): GameState | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
 import {
   canMoveAnyOpponentPiece,
   checkWinner,
@@ -19,7 +36,8 @@ function applyRotationResult(prev: GameState, rotated: Board): GameState {
     return { ...prev, board: rotated, phase: 'game-over', winner: null, winningCells: result.winningCells, isDraw: true };
   }
   if (result.winner) {
-    return { ...prev, board: rotated, phase: 'game-over', winner: result.winner, winningCells: result.winningCells, isDraw: false };
+    const newScore = { ...prev.score, [result.winner]: prev.score[result.winner] + 1 };
+    return { ...prev, board: rotated, phase: 'game-over', winner: result.winner, winningCells: result.winningCells, isDraw: false, score: newScore };
   }
 
   if (prev.phase === 'rotate-only') {
@@ -54,16 +72,26 @@ export function useGameState() {
   const [state, setState] = useState<GameState | null>(null);
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
   const [validMoves, setValidMoves] = useState<number[]>([]);
+  const hasSavedGame = useMemo(() => !state && loadGame() !== null, [state]);
 
-  const startGame = useCallback((mode: GameMode, difficulty: Difficulty) => {
-    setState(createInitialState(mode, difficulty));
+  // Persist state to localStorage on every change
+  useEffect(() => { if (state) saveGame(state); }, [state]);
+
+  const startGame = useCallback((mode: GameMode, difficulty: Difficulty, players?: Record<Player, PlayerInfo>, startingPlayer?: Player, score?: Record<Player, number>) => {
+    clearSave();
+    setState(createInitialState(mode, difficulty, players, startingPlayer, score));
     setSelectedPiece(null);
     setValidMoves([]);
   }, []);
 
+  const continueGame = useCallback(() => {
+    const saved = loadGame();
+    if (saved) setState(saved);
+  }, []);
+
   const reset = useCallback(() => {
     if (!state) return;
-    setState(createInitialState(state.mode, state.difficulty));
+    setState(createInitialState(state.mode, state.difficulty, state.players, undefined, state.score));
     setSelectedPiece(null);
     setValidMoves([]);
   }, [state]);
@@ -228,6 +256,8 @@ export function useGameState() {
     skipMovePhase,
     reset,
     startGame,
+    continueGame,
+    hasSavedGame,
     backToMenu,
     isCpuTurn,
   };
