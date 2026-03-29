@@ -45,7 +45,7 @@ export function StatusBar({ state, isCpuTurn, onSkipMove, onReset, onBackToMenu 
   const DARK_THRESHOLD = '#1a1a2e';
   const scoreColor = (color: string) => color === DARK_THRESHOLD ? '#6b7280' : color;
 
-  const segmentFont = "'DSEG7 Classic', monospace";
+  const segmentFont = "'DSEG7-Classic', monospace";
   const glowStyle = (color: string) => {
     const c = scoreColor(color);
     return {
