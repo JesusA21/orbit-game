@@ -15,7 +15,7 @@ export default function App() {
   const {
     state, selectedPiece, validMoves,
     handleCellClick, handleRotate, skipMovePhase,
-    reset, startGame, continueGame, hasSavedGame, backToMenu, isCpuTurn,
+    startGame, continueGame, hasSavedGame, backToMenu, isCpuTurn,
   } = useGameState();
 
   const [screen, setScreen] = useState<Screen>('menu');
@@ -41,10 +41,23 @@ export default function App() {
 
   const handleSpinnerDone = useCallback((starter: Player) => {
     if (!pendingPlayers) return;
-    // For solo mode, the humanPlayer is whichever side has the human name (always 'black' from setup)
-    startGame(pendingMode, pendingDifficulty, pendingPlayers, starter);
+    const score = state?.score;
+    startGame(pendingMode, pendingDifficulty, pendingPlayers, starter, score);
     setScreen('game');
-  }, [pendingPlayers, pendingMode, pendingDifficulty, startGame]);
+  }, [pendingPlayers, pendingMode, pendingDifficulty, startGame, state?.score]);
+
+  const handleReset = useCallback(() => {
+    if (!state) return;
+    if (state.isDraw) {
+      setPendingPlayers(state.players);
+      setPendingMode(state.mode);
+      setPendingDifficulty(state.difficulty);
+      setScreen('spinner');
+    } else {
+      const loser = state.winner === 'black' ? 'white' : 'black';
+      startGame(state.mode, state.difficulty, state.players, loser, state.score);
+    }
+  }, [state, startGame]);
 
   const handleBackToMenu = useCallback(() => {
     backToMenu();
@@ -99,7 +112,7 @@ export default function App() {
         state={state}
         isCpuTurn={isCpuTurn}
         onSkipMove={skipMovePhase}
-        onReset={reset}
+        onReset={handleReset}
         onBackToMenu={handleBackToMenu}
       />
       <Board
