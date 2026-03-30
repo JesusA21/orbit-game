@@ -79,7 +79,7 @@ export function Board({ state, selectedPiece, validMoves, onCellClick, onRotate 
           const rect = cellRects[i];
           const info = state.players[cell.player];
           const color = info.color;
-          // Derive a darker shade for shadow/border
+          const emoji = info.emoji;
           const shadow = color + '99';
           const isWinning = state.winningCells?.includes(i) ?? false;
           const size = rect.w * 0.7;
@@ -103,7 +103,7 @@ export function Board({ state, selectedPiece, validMoves, onCellClick, onRotate 
                 opacity: 1,
                 boxShadow: isWinning
                   ? '0 0 20px 6px rgba(255, 215, 0, 0.8)'
-                  : `0 4px 8px ${shadow}`,
+                  : emoji ? 'none' : `0 4px 8px ${shadow}`,
               }}
               exit={{ scale: 0, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
@@ -112,12 +112,19 @@ export function Board({ state, selectedPiece, validMoves, onCellClick, onRotate 
                 width: size,
                 height: size,
                 borderRadius: '50%',
-                background: `radial-gradient(circle at 35% 35%, ${highlight}, ${color})`,
-                border: `2px solid ${shadow}`,
+                background: emoji ? 'transparent' : `radial-gradient(circle at 35% 35%, ${highlight}, ${color})`,
+                border: emoji ? 'none' : `2px solid ${shadow}`,
                 pointerEvents: 'none',
                 zIndex: 5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: size * 0.65,
+                lineHeight: 1,
               }}
-            />
+            >
+              {emoji || ''}
+            </motion.div>
           );
         })}
       </AnimatePresence>

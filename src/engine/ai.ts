@@ -1,6 +1,7 @@
 import type { Board, Difficulty, Player } from '../types/game';
 import {
   canMoveAnyOpponentPiece,
+  checkWinner,
   getAdjacentEmpty,
   getOpponent,
   rotateBoard,
@@ -172,10 +173,73 @@ function aiHard(board: Board, currentPlayer: Player): AIMove {
   return bestMove;
 }
 
+// Impossible: minimax with depth looking ahead multiple turns
+function minimax(board: Board, player: Player, maximizing: Player, depth: number): number {
+  const result = checkWinner(board);
+  if (result.winner === maximizing) return 10000 + depth;
+  if (result.winner === getOpponent(maximizing)) return -10000 - depth;
+  if (result.isDraw) return 0;
+  if (depth === 0) return evaluateBoard(board, maximizing);
+
+  const empty = getEmptyCells(board);
+  if (empty.length === 0) return evaluateBoard(board, maximizing);
+
+  const isMax = player === maximizing;
+  let best = isMax ? -Infinity : Infinity;
+
+  // Sample a subset of placements to keep it tractable
+  const placements = empty.length > 6 ? empty.slice(0, 6) : empty;
+
+  for (const idx of placements) {
+    const placed = simulatePlace(board, idx, player, '_mm');
+    const rotated = rotateBoard(placed);
+    const score = minimax(rotated, getOpponent(player), maximizing, depth - 1);
+    best = isMax ? Math.max(best, score) : Math.min(best, score);
+  }
+  return best;
+}
+
+function aiImpossible(board: Board, currentPlayer: Player): AIMove {
+  const opponentMoves: ([number, number] | null)[] = [null];
+  if (canMoveAnyOpponentPiece(board, currentPlayer)) {
+    opponentMoves.push(...getOpponentPieceMoves(board, currentPlayer));
+  }
+
+  let bestScore = -Infinity;
+  let bestMove: AIMove = { opponentFrom: null, opponentTo: null, placeAt: getEmptyCells(board)[0] };
+
+  for (const om of opponentMoves) {
+    const boardAfterMove = om ? simulateOpponentMove(board, om[0], om[1]) : board;
+    const empty = getEmptyCells(boardAfterMove);
+
+    for (const placeIdx of empty) {
+      const placed = simulatePlace(boardAfterMove, placeIdx, currentPlayer, '_tmp');
+      const rotated = rotateBoard(placed);
+
+      // Check immediate win
+      const result = checkWinner(rotated);
+      if (result.winner === currentPlayer) {
+        return { opponentFrom: om?.[0] ?? null, opponentTo: om?.[1] ?? null, placeAt: placeIdx };
+      }
+
+      // Minimax from opponent's perspective, depth 2
+      const score = minimax(rotated, getOpponent(currentPlayer), currentPlayer, 2);
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = { opponentFrom: om?.[0] ?? null, opponentTo: om?.[1] ?? null, placeAt: placeIdx };
+      }
+    }
+  }
+
+  return bestMove;
+}
+
 export function getAIMove(board: Board, currentPlayer: Player, difficulty: Difficulty): AIMove {
   switch (difficulty) {
     case 'easy': return aiEasy(board, currentPlayer);
     case 'normal': return aiNormal(board, currentPlayer);
     case 'hard': return aiHard(board, currentPlayer);
+    case 'impossible': return aiImpossible(board, currentPlayer);
   }
 }

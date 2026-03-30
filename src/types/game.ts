@@ -3,7 +3,13 @@ export type Player = 'black' | 'white';
 export interface PlayerInfo {
   name: string;
   color: string;
+  emoji?: string;
 }
+
+export const PIECE_EMOJIS = [
+  '🪐', '👽', '🌑', '☀️', '🌙', '⭐', '🚀', '🛸',
+  '☄️', '🌍', '🔭', '🌌', '👾', '🛰️', '💫', '🌕',
+];
 
 export interface PieceData {
   id: string;
@@ -16,7 +22,7 @@ export type Board = Cell[];
 
 export type Phase = 'move-opponent' | 'place' | 'rotate' | 'rotate-only' | 'game-over';
 export type GameMode = 'vs' | 'solo';
-export type Difficulty = 'easy' | 'normal' | 'hard';
+export type Difficulty = 'easy' | 'normal' | 'hard' | 'impossible';
 
 export const PIECES_PER_PLAYER = 8;
 export const MAX_EXTRA_ROTATIONS = 10;

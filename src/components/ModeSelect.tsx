@@ -25,6 +25,7 @@ export function ModeSelect({ onStart, hasSavedGame, onContinue }: ModeSelectProp
     { label: '🟢 Fácil', value: 'easy', color: '#22c55e' },
     { label: '🟡 Normal', value: 'normal', color: '#f59e0b' },
     { label: '🔴 Difícil', value: 'hard', color: '#ef4444' },
+    { label: '💀 Imposible', value: 'impossible', color: '#7c0a02' },
   ];
 
   return (

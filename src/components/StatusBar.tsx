@@ -60,7 +60,7 @@ export function StatusBar({ state, isCpuTurn, onSkipMove, onReset, onBackToMenu 
 
   const blackName = isSolo && state.humanPlayer === 'black' ? 'Tú' : state.players.black.name;
   const whiteName = isSolo && state.humanPlayer === 'white' ? 'Tú' : state.players.white.name;
-  const difficultyLabel: Record<string, string> = { easy: 'Fácil', normal: 'Normal', hard: 'Difícil' };
+  const difficultyLabel: Record<string, string> = { easy: 'Fácil', normal: 'Normal', hard: 'Difícil', impossible: 'Imposible' };
   const cpuSide: 'black' | 'white' | null = isSolo ? (state.humanPlayer === 'black' ? 'white' : 'black') : null;
 
   return (
@@ -74,7 +74,9 @@ export function StatusBar({ state, isCpuTurn, onSkipMove, onReset, onBackToMenu 
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', background: state.players.black.color, border: '1px solid rgba(255,255,255,0.2)' }} />
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: state.players.black.color, border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, overflow: 'visible' }}>
+                {state.players.black.emoji ? <span style={{ fontSize: 12 }}>{state.players.black.emoji}</span> : null}
+              </div>
               <span style={{ fontSize: 11, opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase' }} title={cpuSide === 'black' ? `Dificultad: ${difficultyLabel[state.difficulty]}` : undefined}>{blackName}</span>
             </div>
             <span style={glowStyle(state.players.black.color)}>{String(state.score.black).padStart(2, '0')}</span>
@@ -85,7 +87,9 @@ export function StatusBar({ state, isCpuTurn, onSkipMove, onReset, onBackToMenu 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 11, opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase' }} title={cpuSide === 'white' ? `Dificultad: ${difficultyLabel[state.difficulty]}` : undefined}>{whiteName}</span>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', background: state.players.white.color, border: '1px solid rgba(255,255,255,0.2)' }} />
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: state.players.white.color, border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, overflow: 'visible' }}>
+                {state.players.white.emoji ? <span style={{ fontSize: 12 }}>{state.players.white.emoji}</span> : null}
+              </div>
             </div>
             <span style={glowStyle(state.players.white.color)}>{String(state.score.white).padStart(2, '0')}</span>
           </div>
@@ -115,10 +119,16 @@ export function StatusBar({ state, isCpuTurn, onSkipMove, onReset, onBackToMenu 
                   width: 20,
                   height: 20,
                   borderRadius: '50%',
-                  background: playerColor,
-                  border: '2px solid rgba(255,255,255,0.3)',
+                  background: state.players[state.currentPlayer].emoji ? 'transparent' : playerColor,
+                  border: state.players[state.currentPlayer].emoji ? 'none' : '2px solid rgba(255,255,255,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 16,
                 }}
-              />
+              >
+                {state.players[state.currentPlayer].emoji || ''}
+              </div>
               <span style={{ fontSize: 18, fontWeight: 600 }}>{turnLabel}</span>
             </div>
             <div style={{ fontSize: 14, opacity: 0.7 }}>
